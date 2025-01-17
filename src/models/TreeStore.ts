@@ -14,11 +14,11 @@ export class TreeStore {
   }
 
   getItem(id: Id) {
-    return this._items.find(x => x.id === id)
+    return this._items.find(x => x.id === id || x.id.toString() === id.toString())
   }
 
   getChildren(id: Id) {
-    return this._items.filter(x => x.parent === id)
+    return this._items.filter(x => x.parent && (x.parent === id || x.parent.toString() === id.toString()))
   }
 
   getAllChildren(id: Id) {
@@ -33,7 +33,7 @@ export class TreeStore {
   getAllParents(id: Id) {
     const result: TreeStoreItem[] = []
     let parent = this.getItem(id)
-    if (!parent) throw new Error(`Не удалось найти элемент с id ${id}`)
+    if (!parent) throw new Error(`getAllParents: Не удалось найти элемент с id ${id}`)
     while (parent) {
       result.push(parent)
       if (parent.parent === null) break
@@ -48,13 +48,13 @@ export class TreeStore {
 
   removeItem(id: Id) {
     const index = this._items.findIndex(x => x.id === id)
-    if (index === -1) throw new Error(`Не удалось найти элемент с id ${id}`)
+    if (index === -1) throw new Error(`removeItem: Не удалось найти элемент с id ${id}`)
     this._items.splice(index, 1)
   }
 
   updateItem(item: TreeStoreItem) {
     const index = this._items.findIndex(x => x.id === item.id)
-    if (index === -1) throw new Error(`Не удалось найти элемент с id ${item.id}`)
+    if (index === -1) throw new Error(`updateItem: Не удалось найти элемент с id ${item.id}`)
     this._items[index] = item
   }
 }
