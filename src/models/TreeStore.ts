@@ -43,18 +43,27 @@ export class TreeStore {
   }
 
   addItem(item: TreeStoreItem) {
+    if (item.parent && this.getItem(item.parent) === undefined)
+      throw new Error(`addItem: Родительского элемента с id ${item.parent} не существует`)
     this._items.push(item)
   }
 
   removeItem(id: Id) {
     const index = this._items.findIndex(x => x.id === id)
     if (index === -1) throw new Error(`removeItem: Не удалось найти элемент с id ${id}`)
+    const children = this.getChildren(id)
     this._items.splice(index, 1)
+    children.forEach(child => {
+      const childIndex = this._items.findIndex(x => x.id === child.id)
+      this._items.splice(childIndex, 1)
+    })
   }
 
   updateItem(item: TreeStoreItem) {
     const index = this._items.findIndex(x => x.id === item.id)
     if (index === -1) throw new Error(`updateItem: Не удалось найти элемент с id ${item.id}`)
+    if (item.parent && this.getItem(item.parent) === undefined)
+      throw new Error(`updateItem: Не удалось найти родительский элемент с id ${item.parent}`)
     this._items[index] = item
   }
 }
