@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { AgGridVue } from "ag-grid-vue3"
-import { AllCommunityModule, type ColDef, type GetDataPath, type GridApi, type GridReadyEvent, ModuleRegistry, type ValueFormatterParams } from 'ag-grid-community';
+import { AllCommunityModule, type ColDef, type GetDataPath, type GridApi, type GridReadyEvent, ModuleRegistry, type ValueFormatterParams, type ValueGetterParams } from 'ag-grid-community';
 import { TreeDataModule } from 'ag-grid-enterprise';
 import { ref, shallowRef } from "vue";
 import { TreeStore } from "./models/TreeStore";
 import type { TreeStoreItem } from "./models/TreeStoreItem";
 import type { Id } from "./models/Id";
+import GroupCellRenderer from "@/components/GoupCellRenderer.vue"
+
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 ModuleRegistry.registerModules([TreeDataModule]);
@@ -25,6 +27,7 @@ const items = [
 ]
 
 const tree = new TreeStore(items)
+const newItem = ref<TreeStoreItem | undefined>(undefined)
 
 const gridApi = shallowRef<GridApi | null>(null);
 const colDefs = ref<ColDef[]>([
@@ -32,8 +35,13 @@ const colDefs = ref<ColDef[]>([
     headerName: "№ п\\п",
     pinned: "left",
     valueFormatter: (params: ValueFormatterParams) => {
-      console.log(params)
       return `${params.node!.rowIndex! + 1}`;
+    },
+  },
+  {
+    cellRenderer: GroupCellRenderer,
+    valueGetter: (params: ValueGetterParams) => {
+      return params.data.id
     },
   },
   { field: "label", headerName: "Наименование" }
@@ -43,34 +51,48 @@ const groupDefaultExpanded = ref(-1);
 const getDataPath = ref<GetDataPath>((data: TreeStoreItem) => getPath(data.id))
 const groupRowRendererParams = ref({ suppressCount: true, valueFormatter: () => "Группа" })
 const autoGroupColumnDef = ref<ColDef>({
- headerName: "Категория",
- field: "id",
- cellRendererParams: {
-   suppressCount: true,
- },
- valueGetter: (params) => {
-   if (params.data && tree.getChildren(params.data.id).length) return "Группа"
-   return "Элемент"
- }
+  headerName: "Категория",
+  field: "id",
+  cellRendererParams: {
+    suppressCount: true,
+  },
+  valueGetter: (params) => {
+    if (params.data && tree.getChildren(params.data.id).length) return "Группа"
+    return "Элемент"
+  }
 })
 
 
 function onGridReady(params: GridReadyEvent) {
   gridApi.value = params.api
-  // gridApi.value.moveColumns(["id"], 2)
 }
 
 function getPath(id: Id) {
   return tree.getAllParents(id).map(x => x.id).reverse()
 }
 
+// function removeItem(id: Id) {
+//   tree.removeItem(id)
+// }
+//
+// function updateItem(item: TreeStoreItem) {
+//   tree.updateItem(item)
+// }
+
+function addItem(item: TreeStoreItem | undefined) {
+  if (!item) return
+  tree.addItem(item)
+}
+
 </script>
 
 <template>
-  <ag-grid-vue @grid-ready="onGridReady" :column-defs="colDefs" :default-col-def="defaultColDef"
-    :row-data="tree.getAll()" :tree-data="true" :group-default-expanded="groupDefaultExpanded"
-    group-display-type="singleColumn" :get-data-path="getDataPath" :groupRowRendererParams="groupRowRendererParams"
-    :auto-group-column-def="autoGroupColumnDef"
-     style="height: 500px;min-width: 600px">
-  </ag-grid-vue>
+  <div>
+    <ag-grid-vue @grid-ready="onGridReady" :column-defs="colDefs" :default-col-def="defaultColDef"
+              :row-data="tree.getAll()" :tree-data="true" :group-default-expanded="groupDefaultExpanded"
+              group-display-type="singleColumn" :get-data-path="getDataPath" :groupRowRendererParams="groupRowRendererParams"
+              :auto-group-column-def="autoGroupColumnDef" style="height: 500px;min-width: 600px">
+    </ag-grid-vue>
+    <button @click="addItem(newItem)">Add</button>
+  </div>
 </template>
