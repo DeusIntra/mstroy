@@ -45,6 +45,8 @@ export class TreeStore {
   addItem(item: TreeStoreItem) {
     if (item.parent && this.getItem(item.parent) === undefined)
       throw new Error(`addItem: Родительского элемента с id ${item.parent} не существует`)
+    if (this._items.findIndex(x => x.id === item.id) !== -1)
+      throw new Error(`addItem: Элемент с id ${item.id} уже существует`)
     this._items.push(item)
   }
 
