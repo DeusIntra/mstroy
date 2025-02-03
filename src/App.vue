@@ -41,7 +41,7 @@ const colDefs = ref<ColDef[]>([
   {
     cellRenderer: GroupCellRenderer,
     valueGetter: (params: ValueGetterParams) => {
-      return params.data.id
+      return { id: params.data.id, updateFunc: updateItem, removeFunc: removeItem }
     },
   },
   { field: "label", headerName: "Наименование" }
@@ -71,13 +71,13 @@ function getPath(id: Id) {
   return tree.getAllParents(id).map(x => x.id).reverse()
 }
 
-// function removeItem(id: Id) {
-//   tree.removeItem(id)
-// }
-//
-// function updateItem(item: TreeStoreItem) {
-//   tree.updateItem(item)
-// }
+function removeItem(id: Id) {
+  console.log(`remove: ${id}`)
+}
+
+function updateItem(id: Id) {
+  console.log(`update: ${id}`)
+}
 
 function addItem(item: TreeStoreItem | undefined) {
   if (!item) return

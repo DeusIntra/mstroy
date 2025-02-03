@@ -2,11 +2,6 @@
 import { ref } from 'vue';
 
 
-// interface CustomParams {
-//   id: Id,
-//   removeFunc: { function (id: Id): void },
-//   updateFunc: { function (id: Id): void },
-// }
 const props = defineProps({
   params: { type: Object }
 })
