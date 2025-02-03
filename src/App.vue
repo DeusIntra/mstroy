@@ -11,17 +11,17 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 ModuleRegistry.registerModules([TreeDataModule]);
 
 const items = [
-  { id: '1', parent: null, label: 'hi' },
-  { id: '2', parent: '1', label: 'hi' },
-  { id: '3', parent: '1', label: 'hi' },
-  { id: '4', parent: '2', label: 'hi' },
-  { id: '5', parent: '2', label: 'hi' },
-  { id: '6', parent: '3', label: 'hi' },
-  { id: '7', parent: '3', label: 'hi' },
-  { id: '8', parent: '4', label: 'hi' },
-  { id: '9', parent: '8', label: 'hi' },
-  { id: '10', parent: '9', label: 'hi' },
-  { id: '11', parent: '9', label: 'hi' },
+  { id: 'item 1', parent: null, label: 'hi 1' },
+  { id: 'item 2', parent: 'item 1', label: 'hi 2' },
+  { id: 'item 3', parent: 'item 1', label: 'hi 3' },
+  { id: 'item 4', parent: 'item 2', label: 'hi 4' },
+  { id: 'item 5', parent: 'item 2', label: 'hi 5' },
+  { id: 'item 6', parent: 'item 3', label: 'hi 6' },
+  { id: 'item 7', parent: 'item 3', label: 'hi 7' },
+  { id: 'item 8', parent: 'item 4', label: 'hi 8' },
+  { id: 'item 9', parent: 'item 8', label: 'hi 9' },
+  { id: 'item 10', parent: 'item 9', label: 'hi 10' },
+  { id: 'item 11', parent: 'item 9', label: 'hi 11' },
 ]
 
 const tree = new TreeStore(items)
@@ -30,28 +30,34 @@ const gridApi = shallowRef<GridApi | null>(null);
 const colDefs = ref<ColDef[]>([
   {
     headerName: "№ п\\п",
-    width: 50,
+    pinned: "left",
     valueFormatter: (params: ValueFormatterParams) => {
-    console.log(params)
+      console.log(params)
       return `${params.node!.rowIndex! + 1}`;
     },
   },
-  {
-    headerName: "Категория",
-    valueGetter: (params) => {
-      if (params.data && tree.getChildren(params.data.id).length) return "Группа"
-      return "Элемент"
-    }
-  },
-  { field: "label", headerName: "Наименование"  }
+  { field: "label", headerName: "Наименование" }
 ])
 const defaultColDef = ref<ColDef>({ flex: 1 })
 const groupDefaultExpanded = ref(-1);
 const getDataPath = ref<GetDataPath>((data: TreeStoreItem) => getPath(data.id))
+const groupRowRendererParams = ref({ suppressCount: true, valueFormatter: () => "Группа" })
+const autoGroupColumnDef = ref<ColDef>({
+ headerName: "Категория",
+ field: "id",
+ cellRendererParams: {
+   suppressCount: true,
+ },
+ valueGetter: (params) => {
+   if (params.data && tree.getChildren(params.data.id).length) return "Группа"
+   return "Элемент"
+ }
+})
 
 
 function onGridReady(params: GridReadyEvent) {
   gridApi.value = params.api
+  // gridApi.value.moveColumns(["id"], 2)
 }
 
 function getPath(id: Id) {
@@ -62,7 +68,9 @@ function getPath(id: Id) {
 
 <template>
   <ag-grid-vue @grid-ready="onGridReady" :column-defs="colDefs" :default-col-def="defaultColDef"
-    :row-data="tree.getAll()" :tree-data="true" :group-default-expanded="groupDefaultExpanded" group-display-type="groupRows"
-    :get-data-path="getDataPath" style="height: 500px;min-width: 600px">
+    :row-data="tree.getAll()" :tree-data="true" :group-default-expanded="groupDefaultExpanded"
+    group-display-type="singleColumn" :get-data-path="getDataPath" :groupRowRendererParams="groupRowRendererParams"
+    :auto-group-column-def="autoGroupColumnDef"
+     style="height: 500px;min-width: 600px">
   </ag-grid-vue>
 </template>
